@@ -22,7 +22,7 @@ out vec4 fragColor;
 float heavyMath(vec2 p) {
     float v = 0.0;
     // Increased iterations from 100 to 2000 for maximum stress
-    for (int i = 0; i < 2000; i++) { 
+    for (int i = 0; i < 20000; i++) { 
         // Complex non-linear operations that are hard to optimize
         v += sin(p.x * 10.0 + uTime + float(i)) * cos(p.y * 10.0 - uTime + float(i));
         v = log(abs(v) + 1.0) * sqrt(abs(v)) * tan(v * 0.1); 
