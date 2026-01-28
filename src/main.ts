@@ -14,7 +14,11 @@ const cores: CoreState[] = [];
 app.innerHTML = `
   <header>
     <h1>CPU STRESSOR</h1>
-    <div class="subtitle">Dynamic Load Generator V2 <br><span class="heater-text">Personal Heater it is :)</span></div>
+    <dev><span class="heater-text">Personal Heater it is :)</span></div>
+    <div class="monitor-hint">
+      Use Task Manager / htop / Activity Monitor to verify load<br>
+      (or just wait for the fans to spin up.)
+    </div>
     
     <div class="mode-switcher">
         <button id="btn-mode-simple" class="mode-btn active">SIMPLE</button>
