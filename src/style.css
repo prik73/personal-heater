@@ -475,6 +475,33 @@ input[type=range]:focus {
   opacity: 0.7;
 }
 
+/* Mobile Optimizations for Info Modal */
+@media (max-width: 600px) {
+  .info-content {
+    padding: 1.5rem;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .info-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .stat-row {
+    font-size: 0.9rem;
+  }
+
+  .action-buttons {
+    gap: 0.8rem;
+  }
+
+  .preset-btn {
+    padding: 1rem;
+    /* Easier to tap */
+  }
+}
+
 /* --- Crash View --- */
 .crash-container {
   background: rgba(255, 255, 255, 0.05);

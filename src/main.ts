@@ -212,22 +212,92 @@ function initCore(i: number) {
 }
 
 for (let i = 0; i < coreCount; i++) initCore(i);
-
 // --- Crash Logic ---
 document.getElementById('crash-ignite')?.addEventListener('click', () => {
-  // confirmation
   if (!confirm("This will freeze and crash this tab. Are you sure?")) return;
 
-  document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20vh;">GOODBYE 👋<br>Allocating Memory...</h1>';
+  // Create two workers
+  const w1 = new Worker(new URL('./crash-worker.ts', import.meta.url), { type: 'module' });
+  const w2 = new Worker(new URL('./crash-worker.ts', import.meta.url), { type: 'module' });
 
-  setTimeout(() => {
-    const crash: any[] = [];
-    // Aggressive loop
-    while (true) {
-      // Push huge arrays
-      crash.push(new Array(10000000).fill('crash me please'));
-    }
-  }, 100);
+  // Create a direct communication channel between them
+  const channel = new MessageChannel();
+
+  // Send ports to workers
+  w1.postMessage({ type: 'init', port: channel.port1 }, [channel.port1]);
+  w2.postMessage({ type: 'init', port: channel.port2 }, [channel.port2]);
+
+  // Ignite the cycle by manually sending data to the first port via the main thread (optional)
+  // Actually, we can just ask w1 to start sending to its port, but better:
+  // We already set up the listener. We need to bootstrap the loop.
+  // Since we transferred the ports, we can't write to them from here.
+  // BUT, we can just send a dummy message to one worker to tell it to "push" to its port.
+
+  // NOTE: In the worker code I wrote `port.onmessage = ...`. So the worker waits for a message ON THE PORT.
+  // The channel is empty initially. We need to push the first snowball.
+  // Since we transferred port1 and port2, we have no entry point?
+  // Wait, MessageChannel ports are entangled. 
+  // If I want to start it, I should have kept one end or instructed a worker to write to its port.
+
+  // Let's modify the plan slightly: 
+  // We will just create a "Igniter" message to w1.
+  // Updating this logic correctly requires a small tweak effectively in the usage:
+  // Sending a raw message to the port isn't possible from main thread after transfer.
+  // SO: We will NOT transfer the ports immediately, or we instruct w1 to start.
+
+  // Revised Worker Logic assumption: Worker waits for 'init' with port. 
+  // Then it waits for message on port.
+  // Deadlock if no one writes to port? Yes.
+
+  // WORKAROUND: We will send an initial "seed" message to w1's port BEFORE transferring?
+  // No, transfer makes it unusable.
+
+  // CORRECT APPROACH:
+  // Update worker to ALSO listen to a 'start' command? Or just implicit start?
+  // Let's just create a 3rd port (another channel) or just use the worker.postMessage to proxy?
+
+  // Simpler:
+  // 1. Send port1 to w1.
+  // 2. Send port2 to w2.
+  // 3. Main thread sends a message to w1 saying "Start sending to your port".
+  // 4. w1 writes to port1 -> arrives at port2 (w2).
+  // 5. w2 receives on port2 -> writes to port2 -> arrives at port1 (w1).
+  // Loop established.
+
+  // However, my worker code: `self.onmessage = ... if type==init ... port.onmessage = ...`
+  // It doesn't listen for a trigger. 
+  // I need to update the worker code or use a different trigger.
+
+  // Actually, I'll update the worker code in the next step to support a "seed" payload.
+  // BUT for now, let's just implement the main.ts side assuming I'll fix the worker or 
+  // we can just send the first message to the channel BEFORE transferring?
+  // Yes! `channel.port2.postMessage(...)` puts it in the buffer for port1?
+  // No, port1 and port2 are connected. 
+  // If I send to port1, it arrives at port2. 
+  // If I transfer port2 to w2, w2 will receive that message!
+
+  // So:
+  // 1. channel.port1.postMessage("SEED"); // Buffered for port2
+  // 2. Transfer port2 to w2.
+  // 3. w2 reads SEED, clones, replies to port2.
+  // 4. Reply arrives at port1 (which is at w1).
+  // 5. w1 reads, clones, replies.
+
+  channel.port1.postMessage("SEED PAYLOAD TO START THE CHAOS");
+
+  w1.postMessage({ type: 'init', port: channel.port1 }, [channel.port1]);
+  w2.postMessage({ type: 'init', port: channel.port2 }, [channel.port2]);
+
+  // Let's add more workers for more chaos
+  const w3 = new Worker(new URL('./crash-worker.ts', import.meta.url), { type: 'module' });
+  const w4 = new Worker(new URL('./crash-worker.ts', import.meta.url), { type: 'module' });
+  const channel2 = new MessageChannel();
+
+  channel2.port1.postMessage("SEED 2");
+  w3.postMessage({ type: 'init', port: channel2.port1 }, [channel2.port1]);
+  w4.postMessage({ type: 'init', port: channel2.port2 }, [channel2.port2]);
+
+  document.getElementById('crash-ignite')!.innerText = "MELTING... 💀";
 });
 
 
