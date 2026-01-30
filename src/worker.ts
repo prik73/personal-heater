@@ -43,7 +43,7 @@ const runLoop = () => {
 
     // Log periodically what we are doing
     if (Date.now() - lastLogTime > 3000) {
-        console.log(`[Worker] Crunching Math.sqrt() on random vectors at ${targetLoad}% load...`);
+        // console.log(`[Worker] Crunching Math.sqrt() on random vectors at ${targetLoad}% load...`);
         lastLogTime = Date.now();
     }
 

@@ -478,27 +478,42 @@ input[type=range]:focus {
 /* Mobile Optimizations for Info Modal */
 @media (max-width: 600px) {
   .info-content {
-    padding: 1.5rem;
+    padding: 1.25rem 1rem;
+    /* Compact padding */
     width: 90%;
-    max-height: 85vh;
+    max-height: 80vh;
+    /* Safety margin */
     overflow-y: auto;
   }
 
   .info-content h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .info-content p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .info-stats {
+    padding: 0.75rem;
+    margin: 1rem 0;
   }
 
   .stat-row {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    padding: 0.35rem 0;
   }
 
   .action-buttons {
-    gap: 0.8rem;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
   }
 
   .preset-btn {
-    padding: 1rem;
-    /* Easier to tap */
+    padding: 0.75rem;
+    font-size: 0.9rem;
   }
 }
 
