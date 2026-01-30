@@ -9,6 +9,17 @@
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+.mode-btn.danger-btn {
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+}
+
+.mode-btn.danger-btn.active {
+  background: var(--danger-color);
+  color: white;
+  box-shadow: var(--danger-glow);
+}
+
 body {
   margin: 0;
   background-color: var(--bg-color);
@@ -52,7 +63,9 @@ body {
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s;
+    visibility: hidden;
+    /* Added to prevent flash */
+    transition: opacity 0.3s, visibility 0.3s;
     padding: 1rem;
   }
 
@@ -60,6 +73,7 @@ body {
     opacity: 1;
     pointer-events: all;
     display: flex;
+    visibility: visible;
     /* Override default display:none from view-section if needed, though we use opacity here */
   }
 
@@ -461,48 +475,47 @@ input[type=range]:focus {
   opacity: 0.7;
 }
 
-/* --- GPU View --- */
-#view-gpu {
-  width: 100%;
-  flex-direction: column;
-  align-items: center;
-}
-
-#view-gpu.visible {
-  display: flex !important;
-}
-
-.gpu-container {
-  width: 100%;
-  max-width: 600px;
-  background: #000;
-  border: 1px solid rgba(255, 69, 0, 0.3);
-  /* Orange border for heat */
+/* --- Crash View --- */
+.crash-container {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #333;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(255, 69, 0, 0.1);
+  padding: 3rem;
+  text-align: center;
   margin-bottom: 2rem;
-  aspect-ratio: 16/9;
-  position: relative;
 }
 
-#gpu-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
+.crash-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
 }
 
-.gpu-controls {
-  display: flex;
-  gap: 1rem;
+.crash-container h2 {
+  color: var(--text-color);
+  margin: 0;
+  font-size: 2rem;
 }
 
-.mode-btn.gpu-active {
-  color: #ff4500;
-  /* Orange for GPU */
+.warning-box {
+  background: #333;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 2rem;
+  font-family: monospace;
+  letter-spacing: 1px;
 }
 
-.mode-btn.gpu-active.active {
-  background: #ff4500;
-  color: #000;
+.crash-btn {
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.crash-btn:hover {
+  background: #444;
 }

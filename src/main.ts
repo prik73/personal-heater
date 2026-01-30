@@ -1,6 +1,6 @@
 import './style.css';
 import { inject } from '@vercel/analytics';
-import { initGPU } from './gpu';
+
 
 inject();
 
@@ -31,7 +31,7 @@ app.innerHTML = `
     <div class="mode-switcher">
         <button id="btn-mode-simple" class="mode-btn active">SIMPLE</button>
         <button id="btn-mode-pro" class="mode-btn">PRO</button>
-        <button id="btn-mode-gpu" class="mode-btn">GPU</button>
+        <button id="btn-mode-crash" class="mode-btn danger-btn">CRASH</button>
     </div>
 
     <div class="global-stats-container">
@@ -99,17 +99,17 @@ app.innerHTML = `
     </div>
   </div>
 
-  <!-- GPU VIEW -->
-  <div id="view-gpu" class="view-section">
-      <div class="gpu-container">
-          <canvas id="gpu-canvas"></canvas>
+  <!-- CRASH VIEW -->
+  <div id="view-crash" class="view-section">
+      <div class="crash-container">
+        <h2>MEMORY OVERLOAD</h2>
+        <p>This will allocate infinite arrays until your browser tab crashes or your system runs out of RAM.</p>
+        <div class="warning-box">
+            WARNING: SAVE YOUR WORK. THIS TAB WILL DIE.
+        </div>
       </div>
-      <div class="gpu-controls">
-          <button id="gpu-ignite" style="padding:10px 20px; background:#ff4500; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">IGNITE GPU 🔥</button>
-          <button id="gpu-stop" style="padding:10px 20px; background:#333; border:none; color:white; border-radius:4px; font-weight:bold; cursor:pointer;">COOLDOWN 🧊</button>
-      </div>
-      <div style="margin-top:1rem; color:#666; font-size:0.9rem;">
-        <em>Warning: This is a complex fractal shader. Screen may lag.</em>
+      <div class="crash-controls">
+          <button id="crash-ignite" class="crash-btn">IGNITE CRASH</button>
       </div>
   </div>
 
@@ -121,10 +121,10 @@ app.innerHTML = `
 // --- Elements ---
 const viewSimple = document.getElementById('view-simple')!;
 const viewPro = document.getElementById('view-pro')!;
-const viewGpu = document.getElementById('view-gpu')!;
+const viewCrash = document.getElementById('view-crash')!;
 const btnSimple = document.getElementById('btn-mode-simple')!;
 const btnPro = document.getElementById('btn-mode-pro')!;
-const btnGpu = document.getElementById('btn-mode-gpu')!;
+const btnCrash = document.getElementById('btn-mode-crash')!;
 const totalLoadEl = document.getElementById('total-load')!;
 const btnInfo = document.getElementById('btn-info')!;
 const viewInfo = document.getElementById('view-info')!;
@@ -141,6 +141,13 @@ btnCloseInfo.addEventListener('click', () => {
 // Close when clicking outside content
 viewInfo.addEventListener('click', (e) => {
   if (e.target === viewInfo) {
+    viewInfo.classList.remove('visible');
+  }
+});
+
+// Close on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && viewInfo.classList.contains('visible')) {
     viewInfo.classList.remove('visible');
   }
 });
@@ -206,20 +213,22 @@ function initCore(i: number) {
 
 for (let i = 0; i < coreCount; i++) initCore(i);
 
-// --- GPU Logic ---
-const gpuCanvas = document.getElementById('gpu-canvas') as HTMLCanvasElement;
-const gpuManager = initGPU(gpuCanvas);
+// --- Crash Logic ---
+document.getElementById('crash-ignite')?.addEventListener('click', () => {
+  // confirmation
+  if (!confirm("This will freeze and crash this tab. Are you sure?")) return;
 
-if (gpuManager) {
-  document.getElementById('gpu-ignite')?.addEventListener('click', () => {
-    gpuManager.start();
-    btnGpu.classList.add('gpu-active');
-  });
-  document.getElementById('gpu-stop')?.addEventListener('click', () => {
-    gpuManager.stop();
-    btnGpu.classList.remove('gpu-active');
-  });
-}
+  document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20vh;">GOODBYE 👋<br>Allocating Memory...</h1>';
+
+  setTimeout(() => {
+    const crash: any[] = [];
+    // Aggressive loop
+    while (true) {
+      // Push huge arrays
+      crash.push(new Array(10000000).fill('crash me please'));
+    }
+  }, 100);
+});
 
 
 // --- Logic ---
@@ -265,17 +274,17 @@ function toggleProCore(index: number) {
 // Mode Switching
 btnSimple.addEventListener('click', () => setMode('simple'));
 btnPro.addEventListener('click', () => setMode('pro'));
-btnGpu.addEventListener('click', () => setMode('gpu'));
+btnCrash.addEventListener('click', () => setMode('crash'));
 
-function setMode(mode: 'simple' | 'pro' | 'gpu') {
+function setMode(mode: 'simple' | 'pro' | 'crash') {
   // Hide all
   viewSimple.classList.remove('visible');
   viewPro.classList.remove('visible');
-  viewGpu.classList.remove('visible');
+  viewCrash.classList.remove('visible');
 
   btnSimple.classList.remove('active');
   btnPro.classList.remove('active');
-  btnGpu.classList.remove('active');
+  btnCrash.classList.remove('active');
 
   // Show selected
   if (mode === 'simple') {
@@ -285,8 +294,8 @@ function setMode(mode: 'simple' | 'pro' | 'gpu') {
     viewPro.classList.add('visible');
     btnPro.classList.add('active');
   } else {
-    viewGpu.classList.add('visible');
-    btnGpu.classList.add('active');
+    viewCrash.classList.add('visible');
+    btnCrash.classList.add('active');
   }
 }
 
