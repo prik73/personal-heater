@@ -12,7 +12,8 @@ interface CoreState {
 }
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
-const coreCount = navigator.hardwareConcurrency || 4;
+const urlParams = new URLSearchParams(window.location.search);
+const coreCount = parseInt(urlParams.get('cores') || '') || navigator.hardwareConcurrency || 4;
 const cores: CoreState[] = [];
 // currentMode removed as it was unused state
 
@@ -23,7 +24,8 @@ app.innerHTML = `
     <div class="subtitle">Dynamic Load Generator V2 <br><span class="heater-text">Personal Heater it is :)</span></div>
     <div class="monitor-hint">
       Use Task Manager / htop / Activity Monitor to verify load<br>
-      (or just wait for the fans to spin up.)
+      (or just wait for the fans to spin up.) <br>
+      <small style="opacity:0.7">Running ${coreCount} threads (Browser detected: ${navigator.hardwareConcurrency || 'Unknown'})</small>
     </div>
     
     <div class="mode-switcher">
@@ -33,6 +35,7 @@ app.innerHTML = `
     </div>
 
     <div class="global-stats-container">
+       <button id="btn-info" class="info-btn" aria-label="Information">i</button>
        <div class="stat-box">
           <div class="stat-label">TOTAL POWER</div>
           <div class="stat-value" id="total-load">0</div>
@@ -40,6 +43,38 @@ app.innerHTML = `
        </div>
     </div>
   </header>
+
+  <!-- INFO VIEW -->
+  <div id="view-info" class="view-section overlay-view">
+    <div class="info-content">
+        <button id="btn-close-info" class="close-btn">×</button>
+        <h2>Under the Hood</h2>
+        <p>This application creates <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers" target="_blank" style="color:var(--text-color); text-decoration:underline;">Web Workers</a> to run simple math.random calculations on purely separate threads.(from browser's pov)</p>
+        
+        <div class="info-stats">
+            <div class="stat-row">
+                <span>Browser Detected Cores:</span>
+                <strong>${navigator.hardwareConcurrency || 'Unknown'}</strong>
+            </div>
+            <div class="stat-row">
+                <span>Active Workers:</span>
+                <strong>${coreCount}</strong>
+            </div>
+        </div>
+
+        <h3>Advanced Control</h3>
+        <p>You can override the number of threads by adding <code>?cores=N</code> to the URL.</p>
+        
+        <div class="quick-actions">
+            <p>Try these presets:</p>
+            <div class="action-buttons">
+                <a href="/?cores=1" class="preset-btn">1 Core (Single Thread)</a>
+                <a href="/?cores=4" class="preset-btn">4 Cores</a>
+                <a href="/?cores=${navigator.hardwareConcurrency || 16}" class="preset-btn">Max Cores (${navigator.hardwareConcurrency || 16})</a>
+            </div>
+        </div>
+    </div>
+  </div>
 
   <!-- SIMPLE VIEW -->
   <div id="view-simple" class="view-section visible">
@@ -91,6 +126,24 @@ const btnSimple = document.getElementById('btn-mode-simple')!;
 const btnPro = document.getElementById('btn-mode-pro')!;
 const btnGpu = document.getElementById('btn-mode-gpu')!;
 const totalLoadEl = document.getElementById('total-load')!;
+const btnInfo = document.getElementById('btn-info')!;
+const viewInfo = document.getElementById('view-info')!;
+const btnCloseInfo = document.getElementById('btn-close-info')!;
+
+btnInfo.addEventListener('click', () => {
+  viewInfo.classList.add('visible');
+});
+
+btnCloseInfo.addEventListener('click', () => {
+  viewInfo.classList.remove('visible');
+});
+
+// Close when clicking outside content
+viewInfo.addEventListener('click', (e) => {
+  if (e.target === viewInfo) {
+    viewInfo.classList.remove('visible');
+  }
+});
 
 // --- Initialization ---
 function initCore(i: number) {
